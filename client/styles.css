@@ -1,0 +1,210 @@
+@font-face {
+    font-family: Cairo-bold;
+    src: url(fonts/cairo/cairo-bold-webfont.woff) format('woff'),
+        url(fonts/cairo/cairo-bold-webfont.woff2) format('woff2');
+    font-weight: 700;
+
+}
+
+@font-face {
+    font-family: Cairo-light;
+    src: url(fonts/cairo/cairo-light-webfont.woff) format('woff'),
+        url(fonts/cairo/cairo-light-webfont.woff2) format('woff2');
+    font-weight: 300;
+}
+
+@font-face {
+    font-family: Cairo-regular;
+    src: url(fonts/cairo/cairo-regular-webfont.woff) format('woff'),
+        url(fonts/cairo/cairo-regular-webfont.woff2) format('woff2');
+    font-weight: 400;
+}
+
+:root {
+
+    /* Shared colors */
+
+    /*---- Grays */
+    --grayOp: #dbe1e857;
+    --grayOp1: #12181b57;
+    --gray0: #f2f5f8;
+    --gray1: #dbe1e8;
+    --gray2: #b2becd;
+    --gray3: #6c7983;
+    --gray4: #454e56;
+    --gray5: #2a2e35;
+    --gray6: #12181b;
+    --gray7: #000000;
+    --light-shadow: #12181b78;
+    /*---- Grays */
+
+    /*---- Brights */
+    --shared-green1: #B2FF9E;
+    --shared-green2: #AFFC41;
+    --shared-green3: #7FC6A4;
+    --shared-green4: #D6F8D6;
+
+    --shared-yellow: #FAF33E;
+    /*---- Brights */
+
+    /*---- Darks */
+    --shared-blue1: #1DD3B0;
+    --shared-blue2: #086375;
+
+    --shared-purple1: #55505C;
+    --shared-purple2: #3C1642;
+    /*---- Darks */
+
+    /* Shared colors */
+
+
+    /* Dark theme */
+    --black: #000000;
+    --blue1: #F4F4F9;
+    --blue2: #B8DBD9;
+    --blue3: rgb(30, 41, 47);
+    --blue4: rgb(21, 29, 34);
+    /* Dark theme */
+
+
+    /* Sizing */
+
+    --header-height: 550px;
+
+    /* Sizing */
+
+
+    /* 
+BG
+main-header
+buttons
+board
+etc..
+ */
+
+}
+
+.dark {
+    --bg: var(--blue4);
+    --header-bg: var(--blue3);
+    --header-text: var(--gray0);
+    --logo-color: var(--shared-yellow);
+    --sub-title-bg: var(--header);
+    --btn-bg: var(--shared-yellow);
+    --btn-color: var(--gray7);
+}
+
+body {
+    overflow: hidden;
+    background: var(--bg);
+    margin: 0;
+    padding: 0;
+}
+
+ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+}
+
+a {
+    color: currentColor;
+    text-decoration: none;
+}
+
+a:focus {
+    color: currentColor;
+    text-decoration: none;
+}
+
+/* Top section */
+
+header {
+    background: var(--header-bg);
+    clip-path: polygon(50% 0%, 100% 0px, 100% 100%, 1px 50%, 0px 0px);
+    display: grid;
+    grid-template-columns: auto .7fr auto;
+    justify-items: center;
+    height: var(--header-height);
+    width: 100%;
+}
+
+header div {
+    color: var(--header-text);
+    display: grid;
+    justify-content: center;
+    align-content: center;
+}
+
+#logo-svg path,
+#logo-svgg rect,
+#logo-svg image {
+    fill: var(--logo-color) !important;
+}
+
+.main-header {
+    display: grid;
+    grid-template-columns: auto auto;
+    justify-content: center;
+    align-items: center;
+
+    /* Positioning */
+    top: calc(var(--header-height) * 0.5);
+    width: 100%;
+    position: absolute;
+    /* Positioning */
+
+    color: var(--header-text);
+    z-index: 1001;
+}
+
+.main {
+    display: grid;
+    grid-template-rows: auto auto;
+    justify-items: center;
+    row-gap: 0px;
+}
+
+.title {
+    letter-spacing: 0.2em;
+    font-family: Cairo-bold,
+        sans-serif;
+    font-size: 4em;
+    margin-bottom: -10px;
+}
+
+.sub-title {
+    letter-spacing: 0.15em;
+    padding: 0.2em;
+    font-family: Cairo-light,
+        sans-serif;
+    font-size: 1.1em;
+    background: linear-gradient(45deg, var(--sub-title-bg) 0%, var(--sub-title-bg) 50%, rgba(0, 0, 0, 0) 50%);
+    margin-bottom: 1.5em;
+}
+
+.call-to-action input[type='button'] {
+    background: var(--btn-bg);
+    border: none;
+    color: var(--btn-color);
+    padding: 6px 15px;
+    font-size: 1.3em;
+    text-align: center;
+    text-decoration: none;
+    border-radius: 5px;
+}
+
+.call-to-action input[type='button']:nth-child(1) {
+    margin-right: 15px;
+}
+
+.call-to-action input[type='button']:nth-child(2) {
+    margin-left: 15px;
+}
+
+.github {
+    height: 100%;
+    width: 100%;
+}
+
+/* End of top section */
