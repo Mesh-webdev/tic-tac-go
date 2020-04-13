@@ -3,34 +3,68 @@
 
 <head>
     <script src="/socket.io/socket.io.js"></script>
-    <script src="/client/node_modules/jquery/dist/jquery.js"></script>
-    <script src="app.js"></script>
+    <script src="https://code.jquery.com/jquery-3.4.1.js"
+        integrity="sha256-WpOohJOqMqqyKL9FccASB9O0KwACQJpFTUBLTYOVvVU=" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap.css">
     <link rel="stylesheet" href="styles.css">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <script defer src="app.js"></script>
 </head>
 
 <body class="dark">
 
-    <header>
-        <nav></nav>
+    <header class="header">
+        <nav class="navbar">
+            <a href="https://github.com/Mesh-webdev" target="_blank"> github </a>
+        </nav>
     </header>
 
     <div class="main-header">
         <div class="main">
-            <div class="title">TIC-TAC-TOE</div>
+            <div class="title">TIC-TAC-GO</div>
             <div class="sub-title">The online multiplayer of Xs and Os</div>
 
             <div class="call-to-action">
-                <input type="button" value="Join a friend">
-                <input type="button" value="Create a game">
+                <input id="join-game" type="button" value="Join a friend">
+                <input id="create-game" type="button" value="Create a game">
             </div>
 
         </div>
     </div>
 
     <main>
+
+        <div class="container">
+
+            <div class="game-box">
+
+                <div class="join-form">
+
+                    <div class="form">
+                        <div class="input-group my-3">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text" id="inputGroup-sizing-default">Game ID</span>
+                            </div>
+                            <input type="text" id="game-id" class="form-control" aria-label="Default"
+                                aria-describedby="inputGroup-sizing-default">
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="board">
+
+                    <h2>Board</h2>
+
+                </div>
+
+            </div>
+
+
+        </div>
+
 
     </main>
 

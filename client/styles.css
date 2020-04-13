@@ -71,6 +71,18 @@
 
     --header-height: 550px;
 
+    /* Game box sizing */
+
+    --game-box-margin-top: 100px;
+
+    /* Game box sizing */
+
+    /* --- board-sizing */
+
+    --board-hw: 60%;
+
+    /* --- board-sizing */
+
     /* Sizing */
 
 
@@ -94,11 +106,16 @@ etc..
     --btn-color: var(--gray7);
 }
 
+html {
+    height: 100%;
+}
+
 body {
     overflow: hidden;
-    background: var(--bg);
+    background: var(--bg) !important;
     margin: 0;
     padding: 0;
+    height: 100%;
 }
 
 ul {
@@ -108,25 +125,40 @@ ul {
 }
 
 a {
-    color: currentColor;
+    color: currentColor !important;
     text-decoration: none;
 }
 
 a:focus {
-    color: currentColor;
+    color: currentColor !important;
     text-decoration: none;
 }
 
 /* Top section */
+
+.navbar {
+    display: grid;
+    justify-content: end;
+    padding-right: 4em;
+    grid-column-start: 1;
+    grid-column-end: span 3;
+    align-items: center;
+    height: 50px;
+    width: 100%;
+    transition: all 0.6s ease-in-out;
+}
 
 header {
     background: var(--header-bg);
     clip-path: polygon(50% 0%, 100% 0px, 100% 100%, 1px 50%, 0px 0px);
     display: grid;
     grid-template-columns: auto .7fr auto;
+    grid-template-rows: 50px auto;
     justify-items: center;
     height: var(--header-height);
     width: 100%;
+    color: var(--header-text);
+    transition: all 0.6s ease-in-out;
 }
 
 header div {
@@ -134,12 +166,6 @@ header div {
     display: grid;
     justify-content: center;
     align-content: center;
-}
-
-#logo-svg path,
-#logo-svgg rect,
-#logo-svg image {
-    fill: var(--logo-color) !important;
 }
 
 .main-header {
@@ -177,7 +203,7 @@ header div {
     letter-spacing: 0.15em;
     padding: 0.2em;
     font-family: Cairo-light,
-        sans-serif;
+        sans-serif !important;
     font-size: 1.1em;
     background: linear-gradient(45deg, var(--sub-title-bg) 0%, var(--sub-title-bg) 50%, rgba(0, 0, 0, 0) 50%);
     margin-bottom: 1.5em;
@@ -208,3 +234,35 @@ header div {
 }
 
 /* End of top section */
+
+
+/* Main section */
+
+main {
+    height: 100%;
+}
+
+.container {
+    height: 100%;
+}
+
+.game-box {
+    display: grid;
+    justify-items: center;
+    align-items: center;
+    background: var(--shared-purple2);
+    padding: 3em;
+    margin-top: var(--game-box-margin-top);
+}
+
+.join-form {}
+
+.board {
+    background: blue;
+    color: white;
+    height: var(--board-hw);
+    width: var(--board-hw);
+    margin-top: -60px;
+}
+
+/* End Main section */
