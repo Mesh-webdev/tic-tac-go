@@ -1,0 +1,5 @@
+- emit an event from the front end with the player data
+- listem to a create game event.
+- create a player object using the data sent
+- create the game object using the data sent
+- test room counter/hashed ID

@@ -76,7 +76,8 @@
 
   /* --- board-sizing */
 
-  --board-hw: 60%;
+  --board-w: 47%;
+  --board-h: 420px;
 
   /* --- board-sizing */
 
@@ -108,6 +109,7 @@ etc..
   --type-svg-stroke-fill: var(--blue3);
   --player-type-or-color: var(--gray1);
   --game-id-copy-svg-stroke-fill: var(--shared-yellow);
+  --tile-border: var(--gray0);
 }
 
 html {
@@ -416,19 +418,19 @@ main {
 }
 
 .red {
-  background: red;
+  background: #ff0000;
 }
 
 .yellow {
-  background: yellow;
+  background: #ffff00;
 }
 
 .blue {
-  background: blue;
+  background: #0000ff;
 }
 
 .purple {
-  background: purple;
+  background: #800080;
 }
 
 #type-X:hover,
@@ -492,12 +494,134 @@ main {
   width: 150px;
 }
 
+.board-main {
+  width: 100%;
+  height: 100%;
+  display: none;
+  grid-template-rows: 0.4fr auto;
+  row-gap: 4.5em;
+  /* justify-content: center; */
+  align-items: center;
+  justify-items: center;
+  transition: display 0.7s ease-in-out;
+}
+
+.board-title {
+  border-left: solid var(--shared-yellow) 2px;
+  padding-left: 10px;
+}
+
+.board-title h3 {
+  color: var(--header-text);
+}
+
 .board {
-  background: blue;
+  display: grid;
+  grid-template-columns: repeat(3, auto);
   color: white;
-  height: var(--board-hw);
-  width: var(--board-hw);
+  height: var(--board-h);
   margin-top: -60px;
 }
 
+.tile {
+  border: solid var(--tile-border) 1px;
+  min-width: 140px;
+  min-height: 140px;
+}
+
+.tileHoverO {
+  background: rgba(255, 255, 255, 0.150);
+}
+
+.tileHoverX {
+  background: rgba(255, 255, 255, 0.150);
+}
+
+.Xplayed {
+  display: grid;
+  justify-content: center;
+  justify-items: center;
+  align-items: center;
+  align-content: center;
+}
+
+.Oplayed {
+  display: grid;
+  justify-content: center;
+  justify-items: center;
+  align-items: center;
+  align-content: center;
+}
+
+.Xplayed svg {
+
+  width: 100px;
+
+}
+
+.Oplayed svg {
+  width: 100px;
+}
+
+#tile1,
+#tile2,
+#tile4 {
+  border-top: none;
+}
+
+#tile1,
+#tile8,
+#tile64 {
+  border-left: none;
+}
+
+#tile64,
+#tile128,
+#tile256 {
+  border-bottom: none;
+}
+
+#tile4,
+#tile32,
+#tile256 {
+  border-right: none;
+}
+
+
+
 /* End Main section */
+
+
+@keyframes color-rotate {
+  0% {
+    border-color: violet;
+  }
+
+  16% {
+    border-color: indigo;
+  }
+
+  32% {
+    border-color: blue;
+  }
+
+  48% {
+    border-color: greenyellow;
+  }
+
+  64% {
+    border-color: var(--shared-yellow);
+  }
+
+  80% {
+    border-color: orange;
+  }
+
+  94% {
+    border-color: darkred;
+  }
+
+  100% {
+    border-color: violet;
+  }
+}

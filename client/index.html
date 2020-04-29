@@ -17,7 +17,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
-    <script defer src="app.js"></script>
+    <script defer type="module" src="app.js"></script>
 </head>
 
 <body class="dark">
@@ -50,19 +50,39 @@
                 <div class="join-form">
 
                     <div class="form">
+                        <!-- Nickname -->
                         <div class="input-group my-3">
                             <div class="input-group-prepend">
                                 <span class="input-group-text" id="inputGroup-sizing-default">Your nickname</span>
                             </div>
-                            <input type="text" id="game-id" class="form-control" aria-label="Default"
+                            <input type="text" id="join-game-nickname" class="form-control" aria-label="Default"
                                 aria-describedby="inputGroup-sizing-default">
                         </div>
 
+                        <!-- Color -->
+                        <div class="input-group input-group-type my-4">
+                            <div class="input-group-prepend" style="width: 127px;">
+                                <span class="input-group-text" id="inputGroup-sizing-default">Your color</span>
+                            </div>
+                            <div class="form-control form-control-color">
+
+                                <div class="player-color">
+                                    <div class="color red"></div>
+                                    <div class="color yellow"></div>
+                                    <div class="color blue"></div>
+                                    <div class="color purple"></div>
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                        <!-- Game ID -->
                         <div class="input-group my-3">
                             <div class="input-group-prepend">
                                 <span class="input-group-text" id="inputGroup-sizing-default">Game ID</span>
                             </div>
-                            <input type="text" id="game-id" class="form-control" aria-label="Default"
+                            <input type="text" id="join-game-id" class="form-control" aria-label="Default"
                                 aria-describedby="inputGroup-sizing-default">
 
                             <div class="game-id-info">
@@ -100,7 +120,7 @@
                                 <span class="input-group-text" id="inputGroup-sizing-default">Your
                                     nickname</span>
                             </div>
-                            <input type="text" id="game-id" class="form-control" aria-label="Default"
+                            <input type="text" id="create-game-nickname" class="form-control" aria-label="Default"
                                 aria-describedby="inputGroup-sizing-default">
                         </div>
 
@@ -174,7 +194,7 @@
                                     ID</span>
                             </div>
                             <div class="form-control form-control-game-id">
-                                <div id="generated-game-id">5782348</div>
+                                <div id="generated-game-id"></div>
                                 <div class="copy-game-id" data-clipboard-target="#generated-game-id">
                                     <svg id="copy-game-id-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"
                                         stroke-linecap="round" stroke-linejoin="round">
@@ -204,15 +224,31 @@
                         </div>
                         <!-- Button -->
                         <div class="input-group my-4">
-                            <input id="join-game-room" type="button" value="Create">
+                            <input id="create-game-room" type="button" value="Create">
                         </div>
 
                     </div>
                 </div>
 
-                <div class="board">
+                <div class="board-main">
 
-                    <h2>Board</h2>
+                    <div class="board-title">
+                        <h3 id="boardTitle"></h3>
+                    </div>
+
+                    <div class="board">
+                        <div class="tile" id="tile1"></div>
+                        <div class="tile" id="tile2"></div>
+                        <div class="tile" id="tile4"></div>
+                        <div class="tile" id="tile8"></div>
+                        <div class="tile" id="tile16"></div>
+                        <div class="tile" id="tile32"></div>
+                        <div class="tile" id="tile64"></div>
+                        <div class="tile" id="tile128"></div>
+                        <div class="tile" id="tile256"></div>
+                    </div>
+
+
 
                 </div>
 
@@ -227,7 +263,7 @@
     <!-- Popovers -->
     <!-- JoinGame: Game ID -->
     <div class="popover fade bs-popover-right show" role="tooltip" id="join-game-id-popover"
-        style="position: absolute; transform: translate3d(1064px, 332px, 0px); top: 0px; left: 0px; will-change: transform;"
+        style="position: absolute; transform: translate3d(1064px, 418px, 0px); top: 0px; left: 0px; will-change: transform;"
         x-placement="right">
         <div class="arrow" style="top: 64px;"></div>
         <div class="popover-body">Game ID is generated uniquely for each new game. to be able to join your
@@ -248,7 +284,7 @@
     <!--CreateGame: Game ID > Copied -->
     <div class="popover fade bs-popover-right show" role="tooltip" id="create-game-id-copied" x-placement="right">
         <div class="arrow"></div>
-        <div class="popover-body">Copied!.</div>
+        <div class="popover-body">Copied!</div>
     </div>
 
 
