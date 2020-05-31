@@ -21,6 +21,17 @@ let turns = 0;
 // --- Wining coditions array
 let winConditions = [7, 56, 448, 73, 146, 292, 273, 84];
 
+/*     273                 84
+ *        \               /
+ *          1 |   2 |   4  = 7
+ *       -----+-----+-----
+ *          8 |  16 |  32  = 56
+ *       -----+-----+-----
+ *         64 | 128 | 256  = 448
+ *       =================
+ *         73   146   292
+ */
+
 // IO events
 io.on('connection', (socket) => {
   console.log(socket.id);
@@ -51,6 +62,12 @@ io.on('connection', (socket) => {
         console.log(io.sockets.adapter.rooms[gameid].sockets);
         console.log(`Player 1:`);
         console.log(io.sockets.adapter.rooms[gameid].player1);
+
+        // Attach the bothReady value to the room,
+        //bothReady is for checking whether 2 players
+        //want to restart the game or not
+        io.sockets.adapter.rooms[gameid].bothReady = 0;
+
         io.sockets.in(gameid).emit('gameCreated', `You are in: ${gameid}`);
         fn({
           status: true,
@@ -99,8 +116,7 @@ io.on('connection', (socket) => {
               status: true,
               gameid: gameid,
               marker: io.sockets.adapter.rooms[gameid].player1.marker === 'X' ?
-                'O' :
-                'X',
+                'O' : 'X',
             });
           }
         });
@@ -120,6 +136,9 @@ io.on('connection', (socket) => {
     let player1 = io.sockets.adapter.rooms[gameid].player1;
     let player2 = io.sockets.adapter.rooms[gameid].player2;
 
+    // Set turn counter to the room
+    io.sockets.adapter.rooms[gameid].turnCounter = 0;
+
     console.log(`Game started with 2 players`);
     console.log(`Player 1: `);
     console.log(player1.instanceid);
@@ -127,19 +146,26 @@ io.on('connection', (socket) => {
     console.log(`Player 2: `);
     console.log(player2.instanceid);
 
-    io.to(player1.instanceid).emit('gameStarted', gameid);
+    io.in(gameid).emit('setPlayerInfo', {
+      player1,
+      player2,
+    });
+
+    io.in(gameid).emit('startCounter');
+    socket.on('counterFinished', () => {
+      io.to(player1.instanceid).emit('gameStarted');
+      io.to(player2.instanceid).emit('updateBoardTitle');
+    });
   });
 
   socket.on('turnPlayed', (data) => {
-    console.log(data.tilesPlayed);
     let tiles = data.tilesPlayed;
     let moves = data.moves;
     let lastMove = moves[moves.length - 1];
 
     // Player 1
     if (socket.id === io.sockets.adapter.rooms[gameid].player1.instanceid) {
-      turns++;
-      // Check if draw
+      io.sockets.adapter.rooms[gameid].turnCounter++;
 
       io.sockets.adapter.rooms[gameid].player1.moves.push(lastMove);
       io.sockets.adapter.rooms[gameid].player1.tilesPlayed = tiles;
@@ -147,7 +173,9 @@ io.on('connection', (socket) => {
       console.log(io.sockets.adapter.rooms[gameid].player1.moves);
       console.log('Player 1 tiles played: ');
       console.log(io.sockets.adapter.rooms[gameid].player1.tilesPlayed);
-      console.log(`Current turn counter: ${turns}`);
+      console.log(
+        `Current turn counter: ${io.sockets.adapter.rooms[gameid].turnCounter}`
+      );
       console.log('==================================');
 
       // Check if player 1 has won
@@ -162,13 +190,36 @@ io.on('connection', (socket) => {
           winPosition
         ) {
           console.log('Player 1 won!');
+
+          // Emit win
+          socket.emit('Winner', 'You won 🔥, Congratulations!');
+          // Emit lose
+          socket.broadcast.emit('Loser', 'You lost 😞, Better luck next time!');
+          // Emit game ended
+          io.in(gameid).emit('gameEnded');
+
+          // 0 the both ready value
+          io.sockets.adapter.rooms[gameid].bothReady = 0;
+
+          // 0 the turnCounter
+          io.sockets.adapter.rooms[gameid].turnCounter = 0;
         }
       });
+
+      // Chec if game is tied
+      if (io.sockets.adapter.rooms[gameid].turnCounter >= 9) {
+        // Emit tie
+        io.in(gameid).emit('gameTied');
+        // 0 the both ready value
+        io.sockets.adapter.rooms[gameid].bothReady = 0;
+        // 0 the turnCounter
+        io.sockets.adapter.rooms[gameid].turnCounter = 0;
+      }
+
     }
     // Player 2
     else {
-      turns++;
-      // Check if draw
+      io.sockets.adapter.rooms[gameid].turnCounter++;
 
       io.sockets.adapter.rooms[gameid].player2.moves.push(lastMove);
       io.sockets.adapter.rooms[gameid].player2.tilesPlayed = tiles;
@@ -176,7 +227,9 @@ io.on('connection', (socket) => {
       console.log(io.sockets.adapter.rooms[gameid].player2.moves);
       console.log('Player 2 tiles played: ');
       console.log(io.sockets.adapter.rooms[gameid].player2.tilesPlayed);
-      console.log(`Current turn counter: ${turns}`);
+      console.log(
+        `Current turn counter: ${io.sockets.adapter.rooms[gameid].turnCounter}`
+      );
       console.log('==================================');
 
       // Check if player 2 has won
@@ -191,11 +244,66 @@ io.on('connection', (socket) => {
           winPosition
         ) {
           console.log('Player 2 won!');
+
+          // Emit win
+          socket.emit('Winner', 'You won 🔥, Congratulations!');
+          // Emit lose
+          socket.broadcast.emit('Loser', 'You lost 😞, Better luck next time!');
+          // Emit game ended
+          io.in(gameid).emit('gameEnded');
+          // 0 the both ready value
+          io.sockets.adapter.rooms[gameid].bothReady = 0;
+          // 0 the turnCounter
+          io.sockets.adapter.rooms[gameid].turnCounter = 0;
         }
       });
+
+      // Chec if game is tied
+      if (io.sockets.adapter.rooms[gameid].turnCounter >= 9) {
+        // Emit tie
+        io.in(gameid).emit('gameTied');
+        // 0 the both ready value
+        io.sockets.adapter.rooms[gameid].bothReady = 0;
+        // 0 the turnCounter
+        io.sockets.adapter.rooms[gameid].turnCounter = 0;
+      }
+
     }
 
     socket.to(gameid).emit('yourTurn', moves[moves.length - 1]);
+  });
+
+  socket.on('playAgainClick', () => {
+    if (socket.id === io.sockets.adapter.rooms[gameid].player1.instanceid) {
+      io.sockets.adapter.rooms[gameid].bothReady++;
+      io.in(gameid).emit('playAgainClicked', 'Player 1 ✅');
+    }
+    if (socket.id === io.sockets.adapter.rooms[gameid].player2.instanceid) {
+      io.sockets.adapter.rooms[gameid].bothReady++;
+      io.in(gameid).emit('playAgainClicked', 'Player 2 ✅');
+    }
+
+    if (io.sockets.adapter.rooms[gameid].bothReady === 2) {
+      console.log(`Both are ready, ${io.sockets.adapter.rooms[gameid].bothReady}`);
+      io.in(gameid).emit('restartGame');
+    }
+  });
+
+  socket.on('restartGame', (data) => {
+    //gameid = data;
+
+    console.log(gameid);
+
+    // Reset players values
+    io.sockets.adapter.rooms[gameid].player1.moves.length = 0;
+    io.sockets.adapter.rooms[gameid].player2.moves.length = 0;
+
+    io.sockets.adapter.rooms[gameid].player1.tilesPlayed = 0;
+    io.sockets.adapter.rooms[gameid].player2.tilesPlayed = 0;
+
+    io.to(io.sockets.adapter.rooms[gameid].player1.instanceid).emit(
+      'restartTogglePlayer'
+    );
   });
 
   socket.on('generateID', (data, fn) => {

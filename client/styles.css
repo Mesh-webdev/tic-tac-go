@@ -201,6 +201,7 @@ header div {
 }
 
 .title {
+  display: none;
   letter-spacing: 0.2em;
   font-family: Cairo-bold, sans-serif;
   font-size: 4em;
@@ -212,6 +213,7 @@ header div {
 }
 
 .sub-title {
+  display: none;
   letter-spacing: 0.15em;
   padding: 0.2em;
   font-family: Cairo-light, sans-serif !important;
@@ -221,6 +223,10 @@ header div {
       var(--sub-title-bg) 50%,
       rgba(0, 0, 0, 0) 50%);
   margin-bottom: 1.5em;
+}
+
+.call-to-action {
+  display: none;
 }
 
 .call-to-action input[type='button'] {
@@ -252,6 +258,7 @@ header div {
 /* Main section */
 
 main {
+  display: none;
   height: 100%;
 }
 
@@ -271,10 +278,15 @@ main {
 }
 
 .join-form {
+  display: none;
   height: 70%;
-  display: grid;
+  /* display: grid; */
   grid-template-rows: 40px auto;
   justify-items: center;
+}
+
+.create-form {
+  display: none;
 }
 
 .create-form .radio {
@@ -300,6 +312,14 @@ main {
   background: var(--form-textbox-bg);
   border: none;
   font-weight: bold;
+}
+
+#join-game-id-popover {
+  display: none;
+}
+
+#create-game-id-popover {
+  display: none;
 }
 
 .game-id-info,
@@ -462,7 +482,6 @@ main {
 #X-SVG,
 #O-SVG {
   width: 1.5em;
-  fill: var(--type-svg-stroke-fill);
 }
 
 #game-id-info-svg,
@@ -521,6 +540,44 @@ main {
   color: white;
   height: var(--board-h);
   margin-top: -60px;
+  transition: all 0.6 ease-in-out;
+  opacity: 1;
+  cursor: pointer;
+}
+
+.board-disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.play-again {
+  display: none;
+  color: white;
+  background: #0000004d;
+  padding: 10px 35px;
+  font-size: 2em;
+  position: absolute;
+  left: 50%;
+  transform: translate(-50%, 0);
+  top: 60%;
+  transition: all 0.2 ease-in-out;
+  border: none;
+}
+
+.play-again:hover {
+  background: #000000a2;
+}
+
+.play-again-playerlist {
+  display: none;
+  color: white;
+  font-size: 1em;
+  position: absolute;
+  left: 50%;
+  transform: translate(-50%, 0);
+  top: 68%;
+  transition: all 0.2 ease-in-out;
+  border: none;
 }
 
 .tile {
@@ -553,15 +610,40 @@ main {
   align-content: center;
 }
 
-.Xplayed svg {
-
+#MARKER-X-SVG {
   width: 100px;
+}
+
+#MARKER-O-SVG {
+  width: 100px;
+}
+
+.marker-red {
+  fill: #ff0000;
+}
+
+.marker-yellow {
+  fill: #ffff00;
+}
+
+.marker-blue {
+  fill: #0000ff;
+}
+
+.marker-purple {
+  fill: #800080;
+}
+
+
+/* .Xplayed svg {
+
+ width: 100px;
 
 }
 
 .Oplayed svg {
   width: 100px;
-}
+} */
 
 #tile1,
 #tile2,

@@ -1,5 +1,5 @@
 export const Marker = {
-    X: `<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	X: `<svg id="MARKER-X-SVG" class='MARKER_CLASS' version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
 
 	viewBox="0 0 60 59.999" xml:space="preserve">
 <path d="M36.46,29.999L58.662,7.798c1.784-1.784,1.784-4.677,0-6.461c-1.784-1.783-4.676-1.784-6.461,0L30,23.539L7.799,1.337
@@ -12,7 +12,7 @@ export const Marker = {
 		s25.066-11.245,25.066-25.066S253.323-134.231,239.502-134.231z"/>
 </g>
 </svg>`,
-    O: `<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	O: `<svg id="MARKER-O-SVG" class='MARKER_CLASS' version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
 	viewBox="0 0 60 59.999" xml:space="preserve">
 <path d="M7.96-73.834l22.201-22.201c1.784-1.784,1.784-4.677,0-6.461c-1.784-1.783-4.676-1.784-6.461,0L1.5-80.294l-22.201-22.201
 	c-1.784-1.783-4.676-1.784-6.461,0c-1.784,1.784-1.784,4.677,0,6.461l22.201,22.201l-22.201,22.201

@@ -1,5 +1,19 @@
-- emit an event from the front end with the player data
-- listem to a create game event.
-- create a player object using the data sent
-- create the game object using the data sent
-- test room counter/hashed ID
+set allwoed false
+set playable true
+empty client side
+        player.moves
+        player.tilesPlayed
+
+
+call togglePlayer(true) on player1
+empty server side
+        turnCounter
+        player1.moves
+        player1.tilesPlayed
+        player2.moves
+        player2.tilesPlayed
+        
+Listen to restartTogglePlayer
+
+
+Reset the UI for both

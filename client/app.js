@@ -1,8 +1,7 @@
 // Global variables
 
 // Colors array
-const colors = [
-  {
+const colors = [{
     'name': 'red',
     'hash': '#ff0000',
   },
@@ -19,11 +18,12 @@ const colors = [
     'hash': '#800080',
   },
 ];
-// Current turn
-let currentTurn = '';
 
 // is client allowed to play or not
 let allowed = false;
+
+// Is game playable or not
+let playable = true;
 
 // Player object
 let Player = {
@@ -41,8 +41,13 @@ let Game = {
   winComb: [7, 56, 448, 73, 146, 292, 273, 84],
 };
 
+// Restart game value to check if both want to play again; 0 = No, 1 = No, 2 = Yes
+let BothReady = 0;
+
 // SVG marker object
-import { Marker } from './marker.js';
+import {
+  Marker
+} from './marker.js';
 
 const socket = io.connect('http://localhost:8000');
 socket.on('User-connected', (Data) => {
@@ -99,22 +104,13 @@ const createGameGameIDCopied = $('#create-game-id-copied');
 const createGameGeneratedGameID = $('#generated-game-id');
 
 // --- --- --- Game-box board
-const MainBoard = $('.board-main');
+const mainBoard = $('.board-main');
 const board = $('.board');
 const boardTitleContainer = $('.board-title');
 const boardTitle = $('#boardTitle');
 const tiles = document.querySelectorAll('.tile');
-
-// Onload hide elements
-// NOTE: betetr make these display: none;
-title.hide();
-subTitle.hide();
-action.hide();
-main.hide();
-joinForm.hide();
-createForm.hide();
-joinGameIDPopover.hide();
-createGameIDPopover.hide();
+const playAgain = $('#playAgain');
+const playAgainList = $('.play-again-playerlist');
 
 // Onload animations
 title.fadeIn(600, () => {
@@ -201,14 +197,57 @@ socket.on('gameCreated', (data) => {
   console.log(data);
 });
 
+socket.on('startCounter', async () => {
+  await timerCountdown(1)
+    .then(() => {
+      console.log('Finished coutning');
+      socket.emit('counterFinished');
+    })
+    .catch(() => {
+      console.log('Error counting down');
+    });
+});
+
+socket.on('updateBoardTitle', () => {
+  boardTitle.text('Waiting for the other player to play');
+});
+
 socket.on('gameStarted', (data) => {
   // Should add events for hover and click for tiles
+  board.removeClass('board-disabled');
+
+  // allow player1 to play
+  togglePlayer(true);
+
+  // Update board title
+  updateBoardTitle();
+
   addTileEvents();
-  console.log(`${data} started`);
+});
+
+socket.on('setPlayerInfo', (data) => {
+  Game.Player1 = data.player1;
+  Game.Player2 = data.player2;
+
+  // Set svg Colors
+  console.log(Game);
+
+  if (Game.Player1.marker === 'X') {
+    Marker.X = Marker.X.replace('MARKER_CLASS', `marker-${Game.Player1.color}`);
+    Marker.O = Marker.O.replace('MARKER_CLASS', `marker-${Game.Player2.color}`);
+  } else {
+    Marker.X = Marker.X.replace('MARKER_CLASS', `marker-${Game.Player2.color}`);
+    Marker.O = Marker.O.replace('MARKER_CLASS', `marker-${Game.Player1.color}`);
+  }
 });
 
 // --- server emits 'yourTurn' when current client is allowed to play
 socket.on('yourTurn', (data) => {
+  togglePlayer(true);
+
+  // Update board title
+  updateBoardTitle();
+
   let playedMarker = Player.marker === 'X' ? 'O' : 'X';
   let tileid = `tile${data}`;
 
@@ -225,6 +264,87 @@ socket.on('yourTurn', (data) => {
   addTileEvents();
 });
 
+// --- Winner listener
+socket.on('Winner', (data) => {
+  // Set game to unplayable
+  playable = false;
+
+  // unbind all events
+  unbindTileEvents();
+
+  // Disable board
+  board.addClass('board-disabled');
+
+  // Update title
+  updateBoardTitle(data);
+});
+
+// --- Loser listener
+socket.on('Loser', (data) => {
+  // Set game to unplayable
+  playable = false;
+
+  // unbind all events
+  unbindTileEvents();
+
+  // Disable board
+  board.addClass('board-disabled');
+
+  // Update title
+  updateBoardTitle(data);
+});
+
+socket.on('gameEnded', () => {
+  playable = false;
+
+  playAgain.slideDown('300');
+
+  playAgain.on('click', (e) => {
+    socket.emit('playAgainClick');
+    $(`#${e.target.id}`).off();
+  });
+
+  // Empty play again section
+  playAgainList.html('')
+
+});
+
+socket.on('playAgainClicked', (data) => {
+  playAgainList.fadeIn(200, () => {
+    playAgainList.append(`${data} <br>`)
+  });
+});
+
+socket.on('restartGame', () => {
+  console.log('Listened to restartGame');
+  restartGame();
+});
+
+socket.on('restartTogglePlayer', () => {
+  unbindTileEvents();
+  togglePlayer(true);
+  addTileEvents();
+});
+
+
+socket.on('gameTied', () => {
+
+  playable = false;
+
+  playAgain.slideDown('300');
+
+  playAgain.on('click', (e) => {
+    socket.emit('playAgainClick');
+    $(`#${e.target.id}`).off();
+  });
+
+  // Empty play again section
+  playAgainList.html('')
+
+  // Update board title
+  updateBoardTitle('Game is tied ⚔')
+
+})
 // --- Gets the clients that joined in the given gameid
 function getClients(gameid) {
   id = `Game-${gameid.toLowerCase()}`;
@@ -258,7 +378,6 @@ async function displayJoinGameForm() {
       animateMain();
       animateTitle();
       animateJoinForm();
-      board.show();
     })
     .catch(() => {
       // handle err
@@ -266,14 +385,13 @@ async function displayJoinGameForm() {
 }
 
 async function hideCreateGameForm() {
-  console.log(currentTurn);
   createForm.fadeOut(300, () => {
-    MainBoard.css('display', 'grid');
+    mainBoard.css('display', 'grid');
   });
 }
 async function hideJoinGameForm() {
   joinForm.fadeOut(300, () => {
-    MainBoard.css('display', 'grid');
+    mainBoard.css('display', 'grid');
   });
 }
 
@@ -289,19 +407,11 @@ function createGameRoom() {
     document.querySelector('.chosen-type').id === 'type-X' ? 'X' : 'O';
 
   // Color
-  colors.forEach((clr) => {
-    if (clr.name === document.querySelector('.chosen-color').classList[1]) {
-      Player.color = clr.hash;
-    }
-  });
-
-  // Set the global variable 'currentTurn' to the selected marker
-  currentTurn = Player.marker.toUpperCase();
+  Player.color = getChosenColor();
 
   // Emit a create game event
   socket.emit(
-    'createGame',
-    {
+    'createGame', {
       Game,
       Player,
     },
@@ -313,8 +423,14 @@ function createGameRoom() {
         // Show message for player 1
         boardTitle.text('Waiting for the other player to join');
 
+        // Set svg color
+        if (Player.marker === 'X') {
+          Marker.X = Marker.X.replace('MARKER_CLASS', `marker-${Player.color}`);
+        } else {
+          Marker.O = Marker.O.replace('MARKER_CLASS', `marker-${Player.color}`);
+        }
+
         // Creat CSS animation then add it to boardTitle.css() here
-        // Also make the board 'disabled'
       } else {
         console.log(`Error creating a room: ${data.message}`);
       }
@@ -337,8 +453,7 @@ async function joinGameRoom() {
   Game.gameid = joinGameGameID.val();
 
   socket.emit(
-    'joinGame',
-    {
+    'joinGame', {
       Game,
       Player,
     },
@@ -348,6 +463,7 @@ async function joinGameRoom() {
         hideJoinGameForm();
         console.log(data.marker);
         Player.marker = data.marker;
+
         // Emit a start game event(?)
         socket.emit('startGame', data.gameid);
 
@@ -367,7 +483,7 @@ function getChosenColor() {
   let hashColor = '';
   colors.forEach((clr) => {
     if (clr.name === document.querySelector('.chosen-color').classList[1]) {
-      hashColor = clr.hash;
+      hashColor = clr.name;
     }
   });
   return hashColor;
@@ -380,6 +496,55 @@ function generateGameID() {
       Game.gameid = data.id;
       createGameGeneratedGameID.text(data.id.toUpperCase());
     }
+  });
+}
+
+function updateBoardTitle(text = 'NONE') {
+  if (text === 'NONE') {
+    if (playable) {
+      boardTitle.fadeOut(200, () => {
+        if (allowed) boardTitle.text('Your turn to play');
+        if (!allowed & playable)
+          boardTitle.text('Waiting for the other player to play');
+        boardTitle.fadeIn(300);
+      });
+    }
+  } else {
+    boardTitle.fadeOut(200, () => {
+      boardTitle.text(text);
+      boardTitle.fadeIn(300);
+    });
+  }
+}
+
+function togglePlayer(_allowed) {
+  if (playable) {
+    allowed = _allowed;
+
+    if (_allowed) board.removeClass('board-disabled');
+    if (!_allowed) board.addClass('board-disabled');
+  }
+}
+
+function timerCountdown(timeleft) {
+  return new Promise((resolve, reject) => {
+    var countdownTimer = setInterval(() => {
+      timeleft--;
+
+      boardTitle.text(`Game starting in ${timeleft}`);
+      console.log(timeleft);
+
+      if (timeleft <= 0) {
+        clearInterval(countdownTimer);
+        resolve(true);
+      }
+    }, 1000);
+  });
+}
+
+function unbindTileEvents() {
+  tiles.forEach((tile) => {
+    $(`#${tile.id}`).off();
   });
 }
 
@@ -427,28 +592,32 @@ function Animate() {
 }
 
 function addTileEvents() {
-  tiles.forEach((tile) => {
-    if (
-      tile.classList.contains('Xplayed') ||
-      tile.classList.contains('Oplayed')
-    ) {
-      return;
-    } else {
-      // Hover effect
-      $(`#${tile.id}`).on('mouseover', (e) => {
-        $(e.target).addClass(`tileHover${Player.marker}`);
-      });
+  if (playable === true) {
+    tiles.forEach((tile) => {
+      if (
+        tile.classList.contains('Xplayed') ||
+        tile.classList.contains('Oplayed')
+      ) {
+        return;
+      } else {
+        // Hover effect
+        $(`#${tile.id}`).on('mouseover', (e) => {
+          $(e.target).addClass(`tileHover${Player.marker}`);
+        });
 
-      $(`#${tile.id}`).on('mouseleave', (e) => {
-        $(e.target).removeClass(`tileHover${Player.marker}`);
-      });
+        $(`#${tile.id}`).on('mouseleave', (e) => {
+          $(e.target).removeClass(`tileHover${Player.marker}`);
+        });
 
-      // Click event
-      $(`#${tile.id}`).on('click', (e) => {
-        turnPlayed(e);
-      });
-    }
-  });
+        // Click event
+        $(`#${tile.id}`).on('click', (e) => {
+          turnPlayed(e);
+        });
+      }
+    });
+  } else {
+    return;
+  }
 }
 
 function turnPlayed(e) {
@@ -473,14 +642,56 @@ function turnPlayed(e) {
   else $(e.target).append(Marker.O);
 
   // Then unbind all events
-  tiles.forEach((tile) => {
-    $(`#${tile.id}`).unbind();
-  });
+  unbindTileEvents();
 
-  // Change the title
+  togglePlayer(false);
+
+  // Update board title
+  updateBoardTitle();
 
   // Communicate with the backend
   socket.emit('turnPlayed', Player);
+
+  console.log(`is allowed ${allowed}`);
+}
+
+function restartGame() {
+  // Reste global values
+  allowed = false;
+  playable = true;
+
+  // reset player values
+  Player.moves.length = 0;
+  Player.tilesPlayed = 0;
+
+  //Emit to backend to reset server-side values
+  socket.emit('restartGame', Game.gameid);
+
+  // Reset the UI
+  tiles.forEach((tile) => {
+    // Remove classes
+    tile.classList.remove('Xplayed');
+    tile.classList.remove('Oplayed');
+
+    // Remove child SVGs
+    $(`#${tile.id}`).children('svg').remove();
+
+    // show a restarting msg then Hide play again button
+    setTimeout(() => {
+      playAgainList.fadeOut(400, () => {
+        playAgainList.html('Restarting game...')
+        playAgainList.fadeIn(200, () => {
+          setTimeout(() => {
+            playAgainList.fadeOut(10)
+            playAgain.fadeOut(100)
+          }, 1000)
+        })
+      }, )
+    }, 1000)
+
+  });
+
+  updateBoardTitle();
 }
 
 // MISC animations/events
