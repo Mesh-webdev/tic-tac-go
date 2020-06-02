@@ -1,3 +1,4 @@
+console.clear();
 const express = require('express');
 const app = express();
 
@@ -14,6 +15,8 @@ server.listen(8000, () => {
 app.use(express.static('../client'));
 
 // Global variables
+
+let games = [];
 
 // --- Turns counter
 let turns = 0;
@@ -34,22 +37,73 @@ let winConditions = [7, 56, 448, 73, 146, 292, 273, 84];
 
 // IO events
 io.on('connection', (socket) => {
+  let socketid = socket.id;
+  console.log('==========CONNECTED========');
   console.log(socket.id);
+  console.log('Games array:');
+  console.log(games);
   socket.emit('User-connected', {
     instance: socket.id,
   });
 
-  // On connection global variables
-  // game object
-  // player1 object
-  // player2 object
+  socket.on('disconnect', () => {
+    let disconnectedId = socket.id;
+    let roomIndex = -1;
+
+    let player1Index;
+    let player2Index;
+
+    console.log(`Disconnected: ${disconnectedId}`);
+
+    // Find room index if player 1 disconnected
+    player1Index = games.findIndex(
+      (Game) => Game.player1.instanceid === disconnectedId
+    );
+    // Find room index if player 2 disconnected
+    player2Index = games.findIndex(
+      (Game) => Game.player2.instanceid === disconnectedId
+    );
+
+    // Check if player1 in a room
+    if (player1Index >= 0) {
+      roomIndex = player1Index;
+    }
+
+    // Check if player2 in a room
+    if (player2Index >= 0) {
+      roomIndex = player2Index;
+    }
+
+    // if room <= 0
+    if (roomIndex >= 0) {
+      // emit a broadcast event of userDisconnected to the other player
+      socket.to(games[roomIndex].gameid).emit('userDisconnected');
+      // delete the room from games[]
+      games.splice(roomIndex, 1);
+    }
+  });
 
   socket.on('createGame', (data, fn) => {
-    let player = data.Player;
-    let game = data.Game;
+    let _player = data.Player;
+    let _game = data.Game;
+    let _gameid = `Game-${_game.gameid}`;
 
-    gameid = `Game-${game.gameid}`;
-    socket.join(gameid, (err) => {
+    let Player = {
+      nickname: _player.nickname,
+      marker: _player.marker,
+      color: _player.color,
+      tilesPlayed: 0, // This for checking win conditions
+      instanceid: _player.instanceid,
+    };
+    let Game = {
+      gameid: _gameid,
+      player1: Player,
+      player2: {},
+      turnCounter: 0,
+      bothReady: 0,
+    };
+
+    socket.join(_gameid, (err) => {
       if (err) {
         console.log(`Unable to create a room, error: ${err}`);
         fn({
@@ -57,18 +111,9 @@ io.on('connection', (socket) => {
           message: err,
         });
       } else {
-        io.sockets.adapter.rooms[gameid].player1 = player;
-        console.log(`Create and joined room ${gameid}, Clients:`);
-        console.log(io.sockets.adapter.rooms[gameid].sockets);
-        console.log(`Player 1:`);
-        console.log(io.sockets.adapter.rooms[gameid].player1);
+        games.push(Game);
 
-        // Attach the bothReady value to the room,
-        //bothReady is for checking whether 2 players
-        //want to restart the game or not
-        io.sockets.adapter.rooms[gameid].bothReady = 0;
-
-        io.sockets.in(gameid).emit('gameCreated', `You are in: ${gameid}`);
+        io.sockets.in(_gameid).emit('gameCreated');
         fn({
           status: true,
         });
@@ -77,24 +122,31 @@ io.on('connection', (socket) => {
   });
 
   socket.on('joinGame', (data, fn) => {
-    let player = data.Player;
-    let game = data.Game;
-
-    gameid = `Game-${game.gameid.toLowerCase()}`;
+    let _player = data.Player;
+    let _game = data.Game;
+    let _gameid = `Game-${_game.gameid}`;
+    let _gameIndex = games.findIndex((Game) => Game.gameid === _gameid);
 
     // Room validation
 
     // Room is unavailable
-    if (typeof io.sockets.adapter.rooms[gameid] === 'undefined') {
-      console.log(`${gameid} room doesnt exist`);
+    if (typeof io.sockets.adapter.rooms[_gameid] === 'undefined') {
+      console.log(`${_gameid} room doesnt exist`);
       fn({
         status: false,
-        message: `${gameid} room doesnt exist`,
+        message: `${_gameid} room doesnt exist`,
       });
     } else {
       //Game is available and not full
-      if (io.sockets.adapter.rooms[gameid].length < 2) {
-        socket.join(gameid, (err) => {
+      let Player = {
+        nickname: _player.nickname,
+        marker: games[_gameIndex].player1.marker === 'X' ? 'O' : 'X',
+        color: _player.color,
+        tilesPlayed: 0, // This for checking win conditions
+        instanceid: _player.instanceid,
+      };
+      if (io.sockets.adapter.rooms[_gameid].length < 2) {
+        socket.join(_gameid, (err) => {
           if (err) {
             console.log(`Couldn't join, Error ${err}`);
             fn({
@@ -102,56 +154,44 @@ io.on('connection', (socket) => {
               message: err,
             });
           } else {
-            _gameid = gameid;
-            io.sockets.adapter.rooms[gameid].player2 = player;
-            console.log(`Joined room ${gameid}, Clients:`);
-            console.log(io.sockets.adapter.rooms[gameid].sockets);
-            console.log(`Player 2`);
-            console.log(io.sockets.adapter.rooms[gameid].player2);
-            io.to(player.instanceid).emit(
-              'gameCreated',
-              `You are in: ${gameid}`
-            );
+            // Successfully joined
+
+            // Attach player2 to the Game obj in games[]
+            games[_gameIndex].player2 = Player;
+            console.log('Created a Game:');
+            console.log(games.find((Game) => Game.gameid === _gameid));
+            console.log('===========================');
+            console.log(`Current games array ${games.length}: `);
+
+            socket.emit('gameCreated');
             fn({
               status: true,
-              gameid: gameid,
-              marker: io.sockets.adapter.rooms[gameid].player1.marker === 'X' ?
-                'O' : 'X',
+              gameid: _gameid,
+              marker: games[_gameIndex].player1.marker === 'X' ? 'O' : 'X',
             });
           }
         });
         //Game is available but full
       } else {
-        console.log(`${gameid} room is full`);
+        console.log(`${_gameid} room is full`);
         fn({
           status: false,
-          message: `${gameid} room is full`,
+          message: `${_gameid} room is full`,
         });
       }
     }
   });
 
   socket.on('startGame', (data, fn) => {
-    let gameid = data;
-    let player1 = io.sockets.adapter.rooms[gameid].player1;
-    let player2 = io.sockets.adapter.rooms[gameid].player2;
+    let _gameid = `Game-${data}`;
+    let _game = games.find((Game) => Game.gameid === _gameid);
 
-    // Set turn counter to the room
-    io.sockets.adapter.rooms[gameid].turnCounter = 0;
+    let player1 = _game.player1;
+    let player2 = _game.player2;
 
-    console.log(`Game started with 2 players`);
-    console.log(`Player 1: `);
-    console.log(player1.instanceid);
-    console.log(`================`);
-    console.log(`Player 2: `);
-    console.log(player2.instanceid);
+    io.in(_gameid).emit('setPlayerInfo', _game);
 
-    io.in(gameid).emit('setPlayerInfo', {
-      player1,
-      player2,
-    });
-
-    io.in(gameid).emit('startCounter');
+    io.in(_gameid).emit('startCounter');
     socket.on('counterFinished', () => {
       io.to(player1.instanceid).emit('gameStarted');
       io.to(player2.instanceid).emit('updateBoardTitle');
@@ -159,151 +199,157 @@ io.on('connection', (socket) => {
   });
 
   socket.on('turnPlayed', (data) => {
-    let tiles = data.tilesPlayed;
-    let moves = data.moves;
-    let lastMove = moves[moves.length - 1];
+    let _gameid = `Game-${data.gameid}`;
+    let tile = data.tile;
+
+    let _gameIndex = games.findIndex((Game) => Game.gameid === _gameid);
+    // Update game object in games[] with the tile played
 
     // Player 1
-    if (socket.id === io.sockets.adapter.rooms[gameid].player1.instanceid) {
-      io.sockets.adapter.rooms[gameid].turnCounter++;
+    if (socket.id === games[_gameIndex].player1.instanceid) {
+      // Increase the turn counter
+      games[_gameIndex].turnCounter++;
 
-      io.sockets.adapter.rooms[gameid].player1.moves.push(lastMove);
-      io.sockets.adapter.rooms[gameid].player1.tilesPlayed = tiles;
-      console.log('Player 1 tile IDs: ');
-      console.log(io.sockets.adapter.rooms[gameid].player1.moves);
-      console.log('Player 1 tiles played: ');
-      console.log(io.sockets.adapter.rooms[gameid].player1.tilesPlayed);
-      console.log(
-        `Current turn counter: ${io.sockets.adapter.rooms[gameid].turnCounter}`
-      );
+      // Add the tile played to tilesPlayed value of player1
+      games[_gameIndex].player1.tilesPlayed += tile;
+      console.log('Player 1 tilesPlayed: ');
+      console.log(games[_gameIndex].player1.tilesPlayed);
+      console.log(`Current turn counter: ${games[_gameIndex].turnCounter}`);
       console.log('==================================');
 
       // Check if player 1 has won
       console.log('Checking Player 1 win condition:');
       winConditions.forEach((winPosition) => {
         console.log(
-          `Condition: ${winPosition}. Tiles played: ${io.sockets.adapter.rooms[gameid].player1.tilesPlayed}`
+          `Condition: ${winPosition}. Tiles played: ${games[_gameIndex].player1.tilesPlayed}`
         );
         if (
-          (winPosition &
-            io.sockets.adapter.rooms[gameid].player1.tilesPlayed) ==
+          (winPosition & games[_gameIndex].player1.tilesPlayed) ==
           winPosition
         ) {
           console.log('Player 1 won!');
 
           // Emit win
-          socket.emit('Winner', 'You won 🔥, Congratulations!');
+          io.in(_gameid).emit('Winner', 'You won 🔥, Congratulations!');
           // Emit lose
-          socket.broadcast.emit('Loser', 'You lost 😞, Better luck next time!');
+          socket
+            .to(_gameid)
+            .emit('Loser', 'You lost 😞, Better luck next time!');
           // Emit game ended
-          io.in(gameid).emit('gameEnded');
+          io.in(_gameid).emit('gameEnded');
 
           // 0 the both ready value
-          io.sockets.adapter.rooms[gameid].bothReady = 0;
+          games[_gameIndex].bothReady = 0;
 
           // 0 the turnCounter
-          io.sockets.adapter.rooms[gameid].turnCounter = 0;
+          games[_gameIndex].turnCounter = 0;
         }
       });
 
-      // Chec if game is tied
-      if (io.sockets.adapter.rooms[gameid].turnCounter >= 9) {
+      // Check if game is tied
+      if (games[_gameIndex].turnCounter >= 9) {
         // Emit tie
-        io.in(gameid).emit('gameTied');
+        io.in(_gameid).emit('gameTied');
         // 0 the both ready value
-        io.sockets.adapter.rooms[gameid].bothReady = 0;
-        // 0 the turnCounter
-        io.sockets.adapter.rooms[gameid].turnCounter = 0;
-      }
+        games[_gameIndex].bothReady = 0;
 
+        // 0 the turnCounter
+        games[_gameIndex].turnCounter = 0;
+      }
     }
+
+    // ======================================
+
     // Player 2
     else {
-      io.sockets.adapter.rooms[gameid].turnCounter++;
+      // Increase the turn counter
+      games[_gameIndex].turnCounter++;
 
-      io.sockets.adapter.rooms[gameid].player2.moves.push(lastMove);
-      io.sockets.adapter.rooms[gameid].player2.tilesPlayed = tiles;
-      console.log('Player 2 tile IDs: ');
-      console.log(io.sockets.adapter.rooms[gameid].player2.moves);
-      console.log('Player 2 tiles played: ');
-      console.log(io.sockets.adapter.rooms[gameid].player2.tilesPlayed);
-      console.log(
-        `Current turn counter: ${io.sockets.adapter.rooms[gameid].turnCounter}`
-      );
+      // Add the tile played to tilesPlayed value of player1
+      games[_gameIndex].player2.tilesPlayed += tile;
+      console.log('Player 2 tilesPlayed: ');
+      console.log(games[_gameIndex].player2.tilesPlayed);
+      console.log(`Current turn counter: ${games[_gameIndex].turnCounter}`);
       console.log('==================================');
 
-      // Check if player 2 has won
+      // Check if player 1 has won
       console.log('Checking Player 2 win condition:');
       winConditions.forEach((winPosition) => {
         console.log(
-          `Condition: ${winPosition}. Tiles played: ${io.sockets.adapter.rooms[gameid].player2.tilesPlayed}`
+          `Condition: ${winPosition}. Tiles played: ${games[_gameIndex].player2.tilesPlayed}`
         );
         if (
-          (winPosition &
-            io.sockets.adapter.rooms[gameid].player2.tilesPlayed) ==
+          (winPosition & games[_gameIndex].player2.tilesPlayed) ==
           winPosition
         ) {
-          console.log('Player 2 won!');
+          console.log('Player 1 won!');
 
           // Emit win
-          socket.emit('Winner', 'You won 🔥, Congratulations!');
+          io.in(_gameid).emit('Winner', 'You won 🔥, Congratulations!');
           // Emit lose
-          socket.broadcast.emit('Loser', 'You lost 😞, Better luck next time!');
+          io.in(_gameid).broadcast.emit(
+            'Loser',
+            'You lost 😞, Better luck next time!'
+          );
           // Emit game ended
-          io.in(gameid).emit('gameEnded');
+          io.in(_gameid).emit('gameEnded');
+
           // 0 the both ready value
-          io.sockets.adapter.rooms[gameid].bothReady = 0;
+          games[_gameIndex].bothReady = 0;
+
           // 0 the turnCounter
-          io.sockets.adapter.rooms[gameid].turnCounter = 0;
+          games[_gameIndex].turnCounter = 0;
         }
       });
 
-      // Chec if game is tied
-      if (io.sockets.adapter.rooms[gameid].turnCounter >= 9) {
+      // Check if game is tied
+      if (games[_gameIndex].turnCounter >= 9) {
         // Emit tie
-        io.in(gameid).emit('gameTied');
+        io.in(_gameid).emit('gameTied');
         // 0 the both ready value
-        io.sockets.adapter.rooms[gameid].bothReady = 0;
-        // 0 the turnCounter
-        io.sockets.adapter.rooms[gameid].turnCounter = 0;
-      }
+        games[_gameIndex].bothReady = 0;
 
+        // 0 the turnCounter
+        games[_gameIndex].turnCounter = 0;
+      }
     }
 
-    socket.to(gameid).emit('yourTurn', moves[moves.length - 1]);
+    console.log(`Emitting yourTurn back to frontend, ${_gameid}`);
+    socket.to(_gameid).emit('yourTurn', tile);
   });
 
-  socket.on('playAgainClick', () => {
-    if (socket.id === io.sockets.adapter.rooms[gameid].player1.instanceid) {
-      io.sockets.adapter.rooms[gameid].bothReady++;
-      io.in(gameid).emit('playAgainClicked', 'Player 1 ✅');
+  socket.on('playAgainClick', (data) => {
+    let _gameid = `Game-${data.gameid}`;
+    let _gameIndex = games.findIndex((Game) => Game.gameid === _gameid);
+
+    console.log(data);
+
+    // Check if player 1 has clicked
+    if (socket.id === games[_gameIndex].player1.instanceid) {
+      games[_gameIndex].bothReady++;
+      io.in(_gameid).emit('playAgainClicked', 'Player 1 ✅');
     }
-    if (socket.id === io.sockets.adapter.rooms[gameid].player2.instanceid) {
-      io.sockets.adapter.rooms[gameid].bothReady++;
-      io.in(gameid).emit('playAgainClicked', 'Player 2 ✅');
+    // Check if player 2 has clicked
+    if (socket.id === games[_gameIndex].player2.instanceid) {
+      games[_gameIndex].bothReady++;
+      io.in(_gameid).emit('playAgainClicked', 'Player 2 ✅');
     }
 
-    if (io.sockets.adapter.rooms[gameid].bothReady === 2) {
-      console.log(`Both are ready, ${io.sockets.adapter.rooms[gameid].bothReady}`);
-      io.in(gameid).emit('restartGame');
+    if (games[_gameIndex].bothReady === 2) {
+      console.log(`Both are ready, ${games[_gameIndex].bothReady}`);
+      io.in(_gameid).emit('restartGame');
     }
   });
 
   socket.on('restartGame', (data) => {
-    //gameid = data;
-
-    console.log(gameid);
+    let _gameid = `Game-${data.gameid}`;
+    let _gameIndex = games.findIndex((Game) => Game.gameid === _gameid);
 
     // Reset players values
-    io.sockets.adapter.rooms[gameid].player1.moves.length = 0;
-    io.sockets.adapter.rooms[gameid].player2.moves.length = 0;
+    games[_gameIndex].player1.tilesPlayed = 0;
+    games[_gameIndex].player2.tilesPlayed = 0;
 
-    io.sockets.adapter.rooms[gameid].player1.tilesPlayed = 0;
-    io.sockets.adapter.rooms[gameid].player2.tilesPlayed = 0;
-
-    io.to(io.sockets.adapter.rooms[gameid].player1.instanceid).emit(
-      'restartTogglePlayer'
-    );
+    io.to(games[_gameIndex].player1.instanceid).emit('restartTogglePlayer');
   });
 
   socket.on('generateID', (data, fn) => {

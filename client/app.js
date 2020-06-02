@@ -51,7 +51,7 @@ import {
 
 const socket = io.connect('http://localhost:8000');
 socket.on('User-connected', (Data) => {
-  console.log(`Connected with ID: ${Data.instance}`);
+  //console.log(`Connected with ID: ${Data.instance}`);
   Player.instanceid = Data.instance;
 });
 
@@ -111,6 +111,8 @@ const boardTitle = $('#boardTitle');
 const tiles = document.querySelectorAll('.tile');
 const playAgain = $('#playAgain');
 const playAgainList = $('.play-again-playerlist');
+const disconnected = $('.disconnected');
+const disconnectedBtn = $('#disconnectedPlayAgain');
 
 // Onload animations
 title.fadeIn(600, () => {
@@ -160,7 +162,7 @@ createGameGameIDCopy.on('click', () => {
     });
   });
   Clipboard.on('error', (e) => {
-    console.log(e);
+    //console.log(e);
   });
 });
 
@@ -187,24 +189,24 @@ createGameIDInfo.on('mouseleave', () => {
 });
 
 title.on('click', () => {
-  window.location = 'http://localhost:8000/';
+  window.location.reload()
 });
 
 // IO events listeners/related functions
 
 // --- server emits 'gameCreated' when the player succesfully created the game
 socket.on('gameCreated', (data) => {
-  console.log(data);
+  //console.log(data);
 });
 
 socket.on('startCounter', async () => {
   await timerCountdown(1)
     .then(() => {
-      console.log('Finished coutning');
+      //console.log('Finished coutning');
       socket.emit('counterFinished');
     })
     .catch(() => {
-      console.log('Error counting down');
+      //console.log('Error counting down');
     });
 });
 
@@ -230,14 +232,14 @@ socket.on('setPlayerInfo', (data) => {
   Game.Player2 = data.player2;
 
   // Set svg Colors
-  console.log(Game);
+  //console.log(data);
 
   if (Game.Player1.marker === 'X') {
-    Marker.X = Marker.X.replace('MARKER_CLASS', `marker-${Game.Player1.color}`);
-    Marker.O = Marker.O.replace('MARKER_CLASS', `marker-${Game.Player2.color}`);
+    Marker.X = Marker.X.replace('MARKER_CLASS', `marker-${data.player1.color}`);
+    Marker.O = Marker.O.replace('MARKER_CLASS', `marker-${data.player2.color}`);
   } else {
-    Marker.X = Marker.X.replace('MARKER_CLASS', `marker-${Game.Player2.color}`);
-    Marker.O = Marker.O.replace('MARKER_CLASS', `marker-${Game.Player1.color}`);
+    Marker.X = Marker.X.replace('MARKER_CLASS', `marker-${data.player2.color}`);
+    Marker.O = Marker.O.replace('MARKER_CLASS', `marker-${data.player1.color}`);
   }
 });
 
@@ -295,28 +297,28 @@ socket.on('Loser', (data) => {
 });
 
 socket.on('gameEnded', () => {
+  //console.log('GAME ENDED!');
   playable = false;
 
   playAgain.slideDown('300');
 
   playAgain.on('click', (e) => {
-    socket.emit('playAgainClick');
+    socket.emit('playAgainClick', Game);
     $(`#${e.target.id}`).off();
   });
 
   // Empty play again section
-  playAgainList.html('')
-
+  playAgainList.html('');
 });
 
 socket.on('playAgainClicked', (data) => {
   playAgainList.fadeIn(200, () => {
-    playAgainList.append(`${data} <br>`)
+    playAgainList.append(`${data} <br>`);
   });
 });
 
 socket.on('restartGame', () => {
-  console.log('Listened to restartGame');
+  //console.log('Listened to restartGame');
   restartGame();
 });
 
@@ -326,25 +328,39 @@ socket.on('restartTogglePlayer', () => {
   addTileEvents();
 });
 
-
 socket.on('gameTied', () => {
-
   playable = false;
 
   playAgain.slideDown('300');
 
   playAgain.on('click', (e) => {
-    socket.emit('playAgainClick');
+    socket.emit('playAgainClick', Game);
     $(`#${e.target.id}`).off();
   });
 
   // Empty play again section
-  playAgainList.html('')
+  playAgainList.html('');
 
   // Update board title
-  updateBoardTitle('Game is tied ⚔')
+  updateBoardTitle('Game is tied ⚔');
+});
 
-})
+socket.on('userDisconnected', () => {
+  disconnected.css('display', 'grid');
+
+  playAgain.off()
+  unbindTileEvents();
+  board.addClass('board-disabled');
+
+  // Player disconnect event
+  disconnectedBtn.on('click', () => {
+    disconnected.slideUp(400, () => {
+      window.location.reload()
+    })
+  })
+
+});
+
 // --- Gets the clients that joined in the given gameid
 function getClients(gameid) {
   id = `Game-${gameid.toLowerCase()}`;
@@ -352,8 +368,8 @@ function getClients(gameid) {
   socket.emit('list', id);
 
   socket.on('clients', (clients) => {
-    console.log(`Clients in ${id} :`);
-    console.log(clients);
+    //console.log(`Clients in ${id} :`);
+    //console.log(clients);
   });
 }
 
@@ -397,14 +413,23 @@ async function hideJoinGameForm() {
 
 function createGameRoom() {
   // Get player data(nickname, color and marker type)
-  // Should validate the form
 
   // Nickname
-  Player.nickname = createGameNickname.val();
+  if (joinGameNickname.val().length === 0) {
+    Player.nickname = 'No Nickname'
+  } else {
+    Player.nickname = joinGameNickname.val();
+  }
 
-  // Marker, check if the chosen type is type X; marker = x else marker = o
-  Player.marker =
-    document.querySelector('.chosen-type').id === 'type-X' ? 'X' : 'O';
+
+  if (document.querySelector('.chosen-type') != null) {
+    // Marker, check if the chosen type is type X; marker = x else marker = o
+    Player.marker =
+      document.querySelector('.chosen-type').id === 'type-X' ? 'X' : 'O';
+  } else {
+    let randomed = Math.round(Math.random());
+    Player.marker = randomed === 1 ? 'X' : 'O';
+  }
 
   // Color
   Player.color = getChosenColor();
@@ -432,7 +457,7 @@ function createGameRoom() {
 
         // Creat CSS animation then add it to boardTitle.css() here
       } else {
-        console.log(`Error creating a room: ${data.message}`);
+        // console.log(`Error creating a room: ${data.message}`);
       }
     }
   );
@@ -441,7 +466,11 @@ function createGameRoom() {
 async function joinGameRoom() {
   // Get and assign player information
   // Nickname
-  Player.nickname = joinGameNickname.val();
+  if (joinGameNickname.val().length === 0) {
+    Player.nickname = 'No Nickname'
+  } else {
+    Player.nickname = joinGameNickname.val();
+  }
 
   // Color
   Player.color = getChosenColor();
@@ -450,7 +479,12 @@ async function joinGameRoom() {
   // Already assigned, see above; on('User-connected') event.
 
   // Game id
-  Game.gameid = joinGameGameID.val();
+  if (joinGameGameID.val().trim().length === 0) {
+    alert("Can't join without a Game ID ⛔")
+    return
+  } else {
+    Game.gameid = joinGameGameID.val().toLowerCase();
+  }
 
   socket.emit(
     'joinGame', {
@@ -461,15 +495,15 @@ async function joinGameRoom() {
       // If sucessfully joined a game
       if (data.status) {
         hideJoinGameForm();
-        console.log(data.marker);
+        //console.log(data.marker);
         Player.marker = data.marker;
 
         // Emit a start game event(?)
-        socket.emit('startGame', data.gameid);
+        socket.emit('startGame', Game.gameid);
 
         // Change the title to 'Player 1 turn(?)
       } else {
-        console.log(data);
+        alert(data.message)
       }
     }
   );
@@ -480,7 +514,10 @@ function getCurrentTurn() {
 }
 
 function getChosenColor() {
-  let hashColor = '';
+  let hashColor = 'red';
+
+  if (document.querySelector('.chosen-color') === null) return hashColor
+
   colors.forEach((clr) => {
     if (clr.name === document.querySelector('.chosen-color').classList[1]) {
       hashColor = clr.name;
@@ -532,7 +569,7 @@ function timerCountdown(timeleft) {
       timeleft--;
 
       boardTitle.text(`Game starting in ${timeleft}`);
-      console.log(timeleft);
+      // console.log(timeleft);
 
       if (timeleft <= 0) {
         clearInterval(countdownTimer);
@@ -568,7 +605,7 @@ function Animate() {
                 'width': '100%',
                 'top': '9%',
               });
-              gameBox.css('height', '650px');
+              //gameBox.css('height', '650px');
               // Show elements at the top
               title.css({
                 'font-size': '3em',
@@ -621,15 +658,16 @@ function addTileEvents() {
 }
 
 function turnPlayed(e) {
+  let gameid = Game.gameid;
   let tile = parseInt($(e.target).attr('id').slice(4));
 
   // Add the tile played to the Player moves array
   Player.moves.push(tile.toString());
   Player.tilesPlayed += tile;
-  console.log(`Tile ids: `);
-  console.log(Player.moves);
-  console.log('Tiles played');
-  console.log(Player.tilesPlayed);
+  //console.log(`Tile ids: `);
+  //console.log(Player.moves);
+  //console.log('Tiles played');
+  //console.log(Player.tilesPlayed);
 
   // remove the hover class
   $(e.target).removeClass(`tileHover${Player.marker}`);
@@ -650,9 +688,13 @@ function turnPlayed(e) {
   updateBoardTitle();
 
   // Communicate with the backend
-  socket.emit('turnPlayed', Player);
+  //console.log(`Emitted turnPlayed to backend, ${Game.gameid}`);
+  socket.emit('turnPlayed', {
+    tile,
+    gameid
+  });
 
-  console.log(`is allowed ${allowed}`);
+  //console.log(`is allowed ${allowed}`);
 }
 
 function restartGame() {
@@ -665,7 +707,7 @@ function restartGame() {
   Player.tilesPlayed = 0;
 
   //Emit to backend to reset server-side values
-  socket.emit('restartGame', Game.gameid);
+  socket.emit('restartGame', Game);
 
   // Reset the UI
   tiles.forEach((tile) => {
@@ -679,16 +721,15 @@ function restartGame() {
     // show a restarting msg then Hide play again button
     setTimeout(() => {
       playAgainList.fadeOut(400, () => {
-        playAgainList.html('Restarting game...')
+        playAgainList.html('Restarting game...');
         playAgainList.fadeIn(200, () => {
           setTimeout(() => {
-            playAgainList.fadeOut(10)
-            playAgain.fadeOut(100)
-          }, 1000)
-        })
-      }, )
-    }, 1000)
-
+            playAgainList.fadeOut(10);
+            playAgain.fadeOut(100);
+          }, 1000);
+        });
+      });
+    }, 1000);
   });
 
   updateBoardTitle();

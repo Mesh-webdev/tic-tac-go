@@ -20,13 +20,18 @@
     <script defer type="module" src="app.js"></script>
 </head>
 
-<body class="dark">
+<body class="light">
+
+    <div class="corner">
+        <a href="https://github.com/Mesh-webdev" target="_blank"> github </a>
+        <input id="toggleStyle" type="button" value="Light">
+    </div>
 
     <header class="header">
-        <nav class="navbar">
-            <a href="https://github.com/Mesh-webdev" target="_blank"> github </a>
-        </nav>
+
     </header>
+
+
 
     <div class="main-header">
         <div class="main">
@@ -53,7 +58,7 @@
                         <!-- Nickname -->
                         <div class="input-group my-3">
                             <div class="input-group-prepend">
-                                <span class="input-group-text" id="inputGroup-sizing-default">Your nickname</span>
+                                <span class="input-group-text" id="inputGroup-sizing-default">Nickname</span>
                             </div>
                             <input type="text" id="join-game-nickname" class="form-control" aria-label="Default"
                                 aria-describedby="inputGroup-sizing-default">
@@ -62,7 +67,7 @@
                         <!-- Color -->
                         <div class="input-group input-group-type my-4">
                             <div class="input-group-prepend" style="width: 127px;">
-                                <span class="input-group-text" id="inputGroup-sizing-default">Your color</span>
+                                <span class="input-group-text" id="inputGroup-sizing-default">Color</span>
                             </div>
                             <div class="form-control form-control-color">
 
@@ -85,23 +90,6 @@
                             <input type="text" id="join-game-id" class="form-control" aria-label="Default"
                                 aria-describedby="inputGroup-sizing-default">
 
-                            <div class="game-id-info">
-                                <svg version="1.1" id="game-id-info-svg" xmlns="http://www.w3.org/2000/svg"
-                                    xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 180 180"
-                                    xml:space="preserve">
-                                    <path d="M90,0C40.3,0,0,40.29,0,90s40.3,90,90,90c49.71,0,90-40.29,90-90S139.71,0,90,0z M99.21,146.13
-	c-0.79,1.75-1.84,3.29-3.17,4.61c-1.33,1.33-2.9,2.37-4.71,3.13c-1.811,0.75-3.74,1.13-5.79,1.13s-3.97-0.38-5.75-1.13
-	c-1.78-0.76-3.33-1.8-4.66-3.13c-1.32-1.32-2.37-2.86-3.15-4.61c-0.79-1.75-1.18-3.63-1.18-5.62c0-1.99,0.39-3.86,1.18-5.61
-	c0.78-1.75,1.83-3.29,3.15-4.62c1.33-1.32,2.88-2.36,4.66-3.12c1.78-0.75,3.7-1.13,5.75-1.13s3.979,0.38,5.79,1.13
-	c1.81,0.76,3.38,1.8,4.71,3.12c1.33,1.33,2.38,2.87,3.17,4.62c0.78,1.75,1.18,3.62,1.18,5.61
-	C100.39,142.5,99.99,144.38,99.21,146.13z M126.32,77.91c-1.54,4.02-3.74,7.49-6.61,10.42c-2.86,2.92-6.32,5.29-10.36,7.1
-	c-4.05,1.81-8.569,3.05-13.58,3.71l-0.899,17.02H75.95l-1.63-34.04h13.119c2.96,0,5.511-0.42,7.65-1.26
-	c2.14-0.85,3.89-1.99,5.25-3.44c1.36-1.45,2.36-3.13,2.99-5.03s0.95-3.9,0.95-6.02c0-2.89-0.62-5.59-1.86-8.1
-	c-1.23-2.5-3.16-4.71-5.79-6.61c-2.62-1.9-5.96-3.39-10-4.48c-4.05-1.09-8.91-1.63-14.56-1.63h-5.32V25h6.22
-	c9.28,0,17.4,1.1,24.34,3.31c6.94,2.2,12.73,5.13,17.38,8.78c4.65,3.65,8.131,7.83,10.46,12.54c2.32,4.7,3.48,9.59,3.48,14.66
-	S127.859,73.9,126.32,77.91z" />
-                                </svg>
-                            </div>
                         </div>
 
                         <div class="input-group my-4">
@@ -117,8 +105,7 @@
                         <!-- Nickname -->
                         <div class="input-group my-3">
                             <div class="input-group-prepend">
-                                <span class="input-group-text" id="inputGroup-sizing-default">Your
-                                    nickname</span>
+                                <span class="input-group-text" id="inputGroup-sizing-default">Nickname</span>
                             </div>
                             <input type="text" id="create-game-nickname" class="form-control" aria-label="Default"
                                 aria-describedby="inputGroup-sizing-default">
@@ -127,7 +114,7 @@
                         <!-- Marker -->
                         <div class="input-group input-group-type my-4">
                             <div class="input-group-prepend" style="width: 127px;">
-                                <span class="input-group-text" id="inputGroup-sizing-default">Your marker</span>
+                                <span class="input-group-text" id="inputGroup-sizing-default">Marker</span>
                             </div>
                             <div class="form-control form-control-type">
 
@@ -173,7 +160,7 @@
                         <!-- Marker -->
                         <div class="input-group input-group-type my-4">
                             <div class="input-group-prepend" style="width: 127px;">
-                                <span class="input-group-text" id="inputGroup-sizing-default">Your color</span>
+                                <span class="input-group-text" id="inputGroup-sizing-default">Color</span>
                             </div>
                             <div class="form-control form-control-color">
 
@@ -190,7 +177,7 @@
                         <!-- Game ID -->
                         <div class="input-group my-3">
                             <div class="input-group-prepend">
-                                <span class="input-group-text" id="inputGroup-sizing-default">Your Game
+                                <span class="input-group-text" id="inputGroup-sizing-default">Game
                                     ID</span>
                             </div>
                             <div class="form-control form-control-game-id">
@@ -202,24 +189,6 @@
                                             d="M18 8 C18 8 24 2 27 5 30 8 29 12 24 16 19 20 16 21 14 17 M14 24 C14 24 8 30 5 27 2 24 3 20 8 16 13 12 16 11 18 15" />
                                     </svg>
                                 </div>
-                            </div>
-
-                            <div class="create-game-id-info">
-                                <svg version="1.1" id="create-game-id-info-svg" xmlns="http://www.w3.org/2000/svg"
-                                    xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 180 180"
-                                    xml:space="preserve">
-                                    <path d="M90,0C40.3,0,0,40.29,0,90s40.3,90,90,90c49.71,0,90-40.29,90-90S139.71,0,90,0z M99.21,146.13
-	c-0.79,1.75-1.84,3.29-3.17,4.61c-1.33,1.33-2.9,2.37-4.71,3.13c-1.811,0.75-3.74,1.13-5.79,1.13s-3.97-0.38-5.75-1.13
-	c-1.78-0.76-3.33-1.8-4.66-3.13c-1.32-1.32-2.37-2.86-3.15-4.61c-0.79-1.75-1.18-3.63-1.18-5.62c0-1.99,0.39-3.86,1.18-5.61
-	c0.78-1.75,1.83-3.29,3.15-4.62c1.33-1.32,2.88-2.36,4.66-3.12c1.78-0.75,3.7-1.13,5.75-1.13s3.979,0.38,5.79,1.13
-	c1.81,0.76,3.38,1.8,4.71,3.12c1.33,1.33,2.38,2.87,3.17,4.62c0.78,1.75,1.18,3.62,1.18,5.61
-	C100.39,142.5,99.99,144.38,99.21,146.13z M126.32,77.91c-1.54,4.02-3.74,7.49-6.61,10.42c-2.86,2.92-6.32,5.29-10.36,7.1
-	c-4.05,1.81-8.569,3.05-13.58,3.71l-0.899,17.02H75.95l-1.63-34.04h13.119c2.96,0,5.511-0.42,7.65-1.26
-	c2.14-0.85,3.89-1.99,5.25-3.44c1.36-1.45,2.36-3.13,2.99-5.03s0.95-3.9,0.95-6.02c0-2.89-0.62-5.59-1.86-8.1
-	c-1.23-2.5-3.16-4.71-5.79-6.61c-2.62-1.9-5.96-3.39-10-4.48c-4.05-1.09-8.91-1.63-14.56-1.63h-5.32V25h6.22
-	c9.28,0,17.4,1.1,24.34,3.31c6.94,2.2,12.73,5.13,17.38,8.78c4.65,3.65,8.131,7.83,10.46,12.54c2.32,4.7,3.48,9.59,3.48,14.66
-	S127.859,73.9,126.32,77.91z" />
-                                </svg>
                             </div>
                         </div>
                         <!-- Button -->
@@ -253,6 +222,14 @@
 
                     </div>
 
+                    <div class="disconnected">
+                        The other player has disconnected 🚫
+                        <div>
+                            <input class="disconnectedBtn" id="disconnectedPlayAgain" type="button" value="Play again">
+                        </div>
+
+                    </div>
+
                 </div>
 
             </div>
@@ -262,34 +239,6 @@
 
 
     </main>
-
-    <!-- Popovers -->
-    <!-- JoinGame: Game ID -->
-    <div class="popover fade bs-popover-right show" role="tooltip" id="join-game-id-popover"
-        style="position: absolute; transform: translate3d(1064px, 418px, 0px); top: 0px; left: 0px; will-change: transform;"
-        x-placement="right">
-        <div class="arrow" style="top: 64px;"></div>
-        <div class="popover-body">Game ID is generated uniquely for each new game. to be able to join your
-            friend's game, you need to have his Game ID. it can be found on the top right corner of your friend's board.
-        </div>
-    </div>
-
-    <!--CreateGame: Game ID -->
-    <div class="popover fade bs-popover-right show" role="tooltip" id="create-game-id-popover"
-        style="position: absolute; transform: translate3d(1064px, 538px, 0px); top: 0px; left: 0px; will-change: transform;"
-        x-placement="right">
-        <div class="arrow" style="top: 30px;"></div>
-        <div class="popover-body">Game ID is generated uniquely for each new game. to have your friend join you, copy
-            and give him this Game ID.
-        </div>
-    </div>
-
-    <!--CreateGame: Game ID > Copied -->
-    <div class="popover fade bs-popover-right show" role="tooltip" id="create-game-id-copied" x-placement="right">
-        <div class="arrow"></div>
-        <div class="popover-body">Copied!</div>
-    </div>
-
 
 </body>
 
