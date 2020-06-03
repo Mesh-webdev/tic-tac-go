@@ -55,11 +55,29 @@ socket.on('User-connected', (Data) => {
   Player.instanceid = Data.instance;
 });
 
+// Setting the mode if found in storage
+$(document).ready(() => {
+  if (localStorage.getItem('mode') != null) {
+    if (localStorage.getItem('mode') === 'dark') {
+      body.removeClass('light')
+      body.addClass('dark')
+      toggleStyle.val('light')
+    }
+
+    if (localStorage.getItem('mode') === 'light') {
+      body.removeClass('dark')
+      body.addClass('light')
+      toggleStyle.val('dark')
+    }
+  }
+})
+
 // Getting the elements
 
 // --- Buttons
 const joinBtn = $('#join-game');
 const createBtn = $('#create-game');
+const toggleStyle = $('#toggleStyle');
 
 // --- Elements
 
@@ -126,6 +144,7 @@ title.fadeIn(600, () => {
 // Landing page elements events
 joinBtn.on('click', displayJoinGameForm);
 createBtn.on('click', displayCreateGameForm);
+toggleStyle.on('click', modeToggle);
 
 // Game-box page events
 
@@ -733,6 +752,24 @@ function restartGame() {
   });
 
   updateBoardTitle();
+}
+
+function modeToggle() {
+
+  if (body.hasClass('light')) {
+    body.removeClass('light')
+    body.addClass('dark')
+    toggleStyle.val('light')
+
+    localStorage.setItem('mode', 'dark')
+
+  } else {
+    body.removeClass('dark')
+    body.addClass('light')
+    toggleStyle.val('dark')
+    localStorage.setItem('mode', 'light')
+  }
+
 }
 
 // MISC animations/events

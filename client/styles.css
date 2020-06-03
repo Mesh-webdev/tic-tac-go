@@ -152,6 +152,7 @@ body {
   margin: 0;
   padding: 0;
   height: 100%;
+  transition: all 0.4 ease-in-out;
 }
 
 ul {
@@ -294,6 +295,7 @@ header div {
   text-align: center;
   text-decoration: none;
   border-radius: 5px;
+  transition: all 1s ease-in-out;
 }
 
 .call-to-action input[type='button']:nth-child(1) {
