@@ -1,5 +1,5 @@
 # tic-tac-go
-The online multiplayer of Xs and Os
+An online multiplayer of Xs and Os
 
 ## Why?
 I was practicing realtime front-end/back-end communication with socket.io, and decided to make a simple X/O game. Instead of the usual "Chatting app". 
